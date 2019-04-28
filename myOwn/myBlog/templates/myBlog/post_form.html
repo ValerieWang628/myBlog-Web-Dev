@@ -1,0 +1,30 @@
+{% extends "myBlog/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">New Post</legend>
+                {{ form|crispy }}
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-info" type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+{% endblock content %}
+{% comment %} this is to extend from myblog app's base.html {% endcomment %}
+
+{% comment %} 
+this will look very similar to the register template
+because it is a entry form
+not a display template
+{% endcomment %}
+
+{% comment %} 
+https://stackoverflow.com/questions/3452416/django-templates-extends-tag-problem 
+this addresses the problem that the page cann't extend because the extend tag isn't at the very first line
+Move the comment section to elsewhere
+{% endcomment %}
+

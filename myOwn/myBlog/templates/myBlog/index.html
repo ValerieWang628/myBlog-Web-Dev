@@ -1,0 +1,39 @@
+<!-- cited from https://github.com/CoreyMSchafer/code_snippets/blob/master/Django_Blog/03-Templates/django_project/blog/templates/blog/home.html-->
+{% extends 'myBlog/base.html' %}
+
+{% block content%}
+    <div>
+      <h2>  </h2>
+        <form method = 'GET' action = ''>
+        <input type = 'text' name = 'q' placeholder = 'Search Content'/>
+        <input type = 'submit' value = 'Search'/>
+        </form>
+      <h2>  </h2>
+    </div>
+    {% for post in posts %}
+        <article class="media content-section">
+          <div class="media-body">
+            <div class="article-metadata">
+              <a class="mr-2" href="#">{{ post.author }}</a>
+              <small class="text-muted">{{ post.date_posted}}</small>
+            </div>
+            <h5><a class="article-title" href="{% url 'individual-post' post.id %}">{{ post.subject }}</a></h5>
+            {% comment %} 
+            this post.id will be passed into the <int:pk> in the url.py
+            'individual-post', post.id, are two parameters get to passed
+            {% endcomment %}
+            <p class="article-content">{{ post.content }}</p>
+            <form action = "{% url 'like-post'%}" method = 'post'>
+              {% csrf_token %}
+              {% if liked  %}
+                <button type = 'submit' name = 'post_id' value = '{{ post.id }}' class = 'btn btn-outline-danger'>Dislike</button>
+              {% else %}
+                <button type = 'submit' name = 'post_id' value = '{{ post.id }}' class = 'btn btn-outline-primary'>Like</button>
+              {% endif %}
+            <form> 
+          </div>
+        </article>
+    {% endfor %}
+{% endblock %}
+
+

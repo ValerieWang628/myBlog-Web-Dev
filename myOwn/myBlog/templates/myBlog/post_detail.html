@@ -1,0 +1,27 @@
+<!-- cited from https://github.com/CoreyMSchafer/code_snippets/blob/master/Django_Blog/03-Templates/django_project/blog/templates/blog/home.html-->
+{% extends 'myBlog/base.html' %}
+
+{% comment %}
+ to match the naming convention, need to change every post object here into object
+{% endcomment %}
+
+{% block content%}
+{% comment %} this time doesn't have to loop because it is displaying only one post {% endcomment %}
+    <article class="media content-section">
+        <div class="media-body">
+        <div class="article-metadata">
+            <a class="mr-2" href="#">{{ object.author }}</a>
+            <small class="text-muted">{{ object.date_posted}}</small>
+        </div>
+        <h5 class = "article-title">{{ object.subject }}</h5>
+        {% comment %} in this case, no need to add href to each subject {% endcomment %}
+        <p class="article-content">{{ object.content }}</p>
+        {% if object.author == user %}
+            <div>
+                <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'individual-post-update' object.id %}">Update</a>
+                <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'individual-post-delete' object.id %}">Delete</a>
+            </div>
+        {% endif %}
+        </div>
+    </article>
+{% endblock %}

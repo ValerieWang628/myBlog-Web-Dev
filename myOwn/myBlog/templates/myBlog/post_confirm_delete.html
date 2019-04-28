@@ -1,0 +1,33 @@
+{% extends "myBlog/base.html" %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Delete Post</legend>
+                <h4>Do you really want to delete this post "{{ object.subject }}"?</h4>
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-danger" type="submit">Confirm Deletion</button>
+                <a class="btn btn-outline-secondary" href="{% url 'individual-post' object.id %}">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}
+{% comment %} this is to extend from myblog app's base.html {% endcomment %}
+
+{% comment %} this is copied from the post_form.html {% endcomment %}
+
+{% comment %} 
+this will look very similar to the register template
+because it is a entry form
+not a display template
+{% endcomment %}
+
+{% comment %} 
+https://stackoverflow.com/questions/3452416/django-templates-extends-tag-problem 
+this addresses the problem that the page cann't extend because the extend tag isn't at the very first line
+Move the comment section to elsewhere
+{% endcomment %}
+
+{% comment %} source: https://github.com/CoreyMSchafer/code_snippets/blob/master/Django_Blog/10-Posts-Create-Update-Delete/django_project/blog/templates/blog/post_confirm_delete.html {% endcomment %}
