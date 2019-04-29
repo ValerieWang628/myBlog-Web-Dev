@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from .models import Post
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import Q, F, Count
 
 
 # def home(request):
@@ -19,25 +20,49 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 def about(request):
     return render(request, 'myBlog/about.html', {'title': 'about'})
 
+def search(request):
+    queryPool = Post.objects.all()
+    query = request.GET.get("q")
+    # https://docs.djangoproject.com/en/1.8/topics/db/aggregation/#order-by
+    # https://github.com/codingforentrepreneurs/try-django-19/blob/master/src/posts/views.py
+    if query:
+        query_result = queryPool.filter(
+				Q(subject__icontains=query)|
+				Q(content__icontains=query)|
+				Q(date_posted__icontains=query) |
+				Q(author__username__icontains=query)
+				).annotate(like_nums = Count('likes')).distinct().order_by('-like_nums','-date_posted') 
+                # distinct is to remove duplicate rows
+    else: query_result = queryPool
+    
+    like_num_dict = dict()
+    for po in query_result:
+        like_num_dict[po] = len(po.likes.all())
+
+    context = {
+        'posts': query_result,
+        'like_num': like_num_dict
+    }
+    
+    return render(request, 'myBlog/search.html', context)
+
 def like_post(request):
     post = get_object_or_404(Post, id = request.POST.get('post_id'))
-    PostListView.liked = False
     if post.likes.filter(id = request.user.id).exists():
         post.likes.remove(request.user)
-        # liked = False
-        PostListView.liked = False
+        # post.like_num = post.likes.count()
     else:
         post.likes.add(request.user)
-        # liked = True
-        PostListView.liked = True
+        # post.like_num = post.likes.count()
     return HttpResponseRedirect(post.get_absolute_url())
 
-
+def favorite_post(request):
+    pass
 
 class PostListView(ListView):
     # this is a class that inherents from the django listview class
     model = Post 
-    liked = None
+    posts = Post.objects.all()
     # to specify what model to use, and what data to get from
     # in this case, it will fetch the subject, content, data_posted, author data of this class object
     # I already created the post model, a model class inherent from the builtin model class
@@ -51,8 +76,26 @@ class PostListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['liked'] = [self.liked]
+        context['liked_status'] = self.liked_status()
+        context['like_num'] = self.how_many_likes()
         return context
+    
+    def liked_status(self):
+        liked = set()
+        for po in PostListView.posts:
+            if self.request.user in po.likes.all():
+                liked.add(po)
+        return liked
+    
+    def how_many_likes(self):
+        like_num_dict = dict()
+        for po in PostListView.posts:
+            like_num_dict[po] = len(po.likes.all())
+        return like_num_dict
+
+
+
+
 
 
 

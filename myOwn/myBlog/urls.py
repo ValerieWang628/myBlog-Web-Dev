@@ -17,6 +17,7 @@ urlpatterns = [
 
     path('post/likes/', views.like_post, name = 'like-post'),
 
+    path('post/favorites/', views.favorite_post, name = 'favorite-post'),
 
     path('post/new/', CreatePostView.as_view(), name = 'new-post'),
     # this will look for a file for post_form.html
@@ -30,6 +31,7 @@ urlpatterns = [
         # the views.home means to direct to the home function of view.py
         # the home function is in the view.py to display the post content into the html template
     path('about/', views.about, name = 'myBlogAbout'),
+    path('search/', views.search, name = 'searchPage'),
     # need a trailing slash
     # don't need to update in the myOwnProj urls.py 
     # because the main urls.py sends anything of blog to myBlog and lets myBlog handles that

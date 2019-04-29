@@ -2,19 +2,12 @@
 {% extends 'myBlog/base.html' %}
 
 {% block content%}
-    <div>
-      <h2>  </h2>
-        <form method = 'GET' action = ''>
-        <input type = 'text' name = 'q' placeholder = 'Search Content'/>
-        <input type = 'submit' value = 'Search'/>
-        </form>
-      <h2>  </h2>
-    </div>
+
     {% for post in posts %}
         <article class="media content-section">
           <div class="media-body">
             <div class="article-metadata">
-              <a class="mr-2" href="#">{{ post.author }}</a>
+              <a class="mr-2">{{ post.author }}</a>
               <small class="text-muted">{{ post.date_posted}}</small>
             </div>
             <h5><a class="article-title" href="{% url 'individual-post' post.id %}">{{ post.subject }}</a></h5>
@@ -23,14 +16,28 @@
             'individual-post', post.id, are two parameters get to passed
             {% endcomment %}
             <p class="article-content">{{ post.content }}</p>
-            <form action = "{% url 'like-post'%}" method = 'post'>
-              {% csrf_token %}
-              {% if liked  %}
-                <button type = 'submit' name = 'post_id' value = '{{ post.id }}' class = 'btn btn-outline-danger'>Dislike</button>
-              {% else %}
-                <button type = 'submit' name = 'post_id' value = '{{ post.id }}' class = 'btn btn-outline-primary'>Like</button>
-              {% endif %}
-            <form> 
+            {% if user.is_authenticated %}
+              <form action = "{% url 'like-post'%}" method = 'post'>
+                {% csrf_token %}
+                {% if post in liked_status  %}
+                  <button type = 'submit' name = 'post_id' value = '{{ post.id }}' class = 'btn btn-outline-danger'>Dislike</button>
+                {% else %}
+                  <button type = 'submit' name = 'post_id' value = '{{ post.id }}' class = 'btn btn-outline-primary'>Like</button>
+                {% endif %}
+              <form> 
+            {% endif %}
+            <div class = 'text-right'>
+              {% for key, value in like_num.items %}
+                {% if key == post %}
+                  {% if value == 1 %}
+                  {% comment %} bootstrap button {% endcomment %}
+                    <button type="button" class="btn btn-secondary btn-sm" disabled>{{value}} like</button>
+                  {% else %}
+                    <button type="button" class="btn btn-secondary btn-sm" disabled>{{value}} likes</button>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </div>
           </div>
         </article>
     {% endfor %}
