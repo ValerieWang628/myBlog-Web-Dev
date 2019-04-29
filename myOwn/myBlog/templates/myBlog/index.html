@@ -17,14 +17,14 @@
             {% endcomment %}
             <p class="article-content">{{ post.content }}</p>
             {% if user.is_authenticated %}
-              <form action = "{% url 'like-post'%}" method = 'post'>
+              <form action = "{% url 'like-post'%}" method = 'post' name = 'like'>
                 {% csrf_token %}
                 {% if post in liked_status  %}
-                  <button type = 'submit' name = 'post_id' value = '{{ post.id }}' class = 'btn btn-outline-danger'>Dislike</button>
+                  <button type = 'submit' name = 'like' value = '{{ post.id }}' class = 'btn btn-outline-danger'>Dislike</button>
                 {% else %}
-                  <button type = 'submit' name = 'post_id' value = '{{ post.id }}' class = 'btn btn-outline-primary'>Like</button>
+                  <button type = 'submit' name = 'like' value = '{{ post.id }}' class = 'btn btn-outline-primary'>Like</button>
                 {% endif %}
-              <form> 
+              <form>
             {% endif %}
             <div class = 'text-right'>
               {% for key, value in like_num.items %}

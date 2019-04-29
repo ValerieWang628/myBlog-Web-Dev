@@ -22,6 +22,18 @@
                 <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'individual-post-delete' object.id %}">Delete</a>
             </div>
         {% endif %}
+        <div>
+            <h2> </h2>
+            <form action = "{% url 'favorite-post' object.id %}" method = 'post' name = 'favorite'>
+            {% csrf_token %}
+            {% if object in favorited_status  %}
+                <button type = 'submit' name = 'favorite' value = '{{ post.id }}' class = 'btn btn-outline-danger'>Unfavorite</button>
+            {% else %}
+                <button type = 'submit' name = 'favorite' value = '{{ post.id }}' class = 'btn btn-outline-primary'>Favorite</button>
+            {% endif %}
+            <form> 
+            <h2> </h2>
+            </div>
         </div>
     </article>
 {% endblock %}

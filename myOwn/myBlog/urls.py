@@ -15,9 +15,11 @@ urlpatterns = [
 
     path('post/<int:pk>/delete/', DeletePostView.as_view(), name = 'individual-post-delete'),
 
+    path('post/<int:pk>/favorites/', views.favorite_post, name = 'favorite-post'),
+
     path('post/likes/', views.like_post, name = 'like-post'),
 
-    path('post/favorites/', views.favorite_post, name = 'favorite-post'),
+    # path('post/favorites/', views.favorite_post, name = 'favorite-post'),
 
     path('post/new/', CreatePostView.as_view(), name = 'new-post'),
     # this will look for a file for post_form.html

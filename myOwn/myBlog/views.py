@@ -23,41 +23,57 @@ def about(request):
 def search(request):
     queryPool = Post.objects.all()
     query = request.GET.get("q")
+    queryDictionary = request.GET
     # https://docs.djangoproject.com/en/1.8/topics/db/aggregation/#order-by
     # https://github.com/codingforentrepreneurs/try-django-19/blob/master/src/posts/views.py
     if query:
         query_result = queryPool.filter(
-				Q(subject__icontains=query)|
-				Q(content__icontains=query)|
-				Q(date_posted__icontains=query) |
-				Q(author__username__icontains=query)
-				).annotate(like_nums = Count('likes')).distinct().order_by('-like_nums','-date_posted') 
+                Q(subject__icontains=query)|
+                Q(content__icontains=query)|
+                Q(date_posted__icontains=query) |
+                Q(author__username__icontains=query)
+                ).annotate(like_nums = Count('likes')).distinct().order_by('-like_nums','-date_posted') 
                 # distinct is to remove duplicate rows
     else: query_result = queryPool
-    
+
+    if 'search_fav' in queryDictionary:
+        query_fav = True
+    else: query_fav = False
+
+    fav_dict = dict()
+    for po in query_result:
+        if request.user in po.favorites.all():
+            fav_dict[po] = True
+        else: fav_dict[po] = False
+
     like_num_dict = dict()
     for po in query_result:
         like_num_dict[po] = len(po.likes.all())
 
     context = {
         'posts': query_result,
-        'like_num': like_num_dict
+        'like_num': like_num_dict,
+        'fav_status': fav_dict,
+        'query_type': query_fav,
     }
     
     return render(request, 'myBlog/search.html', context)
 
 def like_post(request):
-    post = get_object_or_404(Post, id = request.POST.get('post_id'))
+    post = get_object_or_404(Post, id = request.POST.get('like'))
     if post.likes.filter(id = request.user.id).exists():
         post.likes.remove(request.user)
-        # post.like_num = post.likes.count()
     else:
         post.likes.add(request.user)
-        # post.like_num = post.likes.count()
     return HttpResponseRedirect(post.get_absolute_url())
 
-def favorite_post(request):
-    pass
+def favorite_post(request, pk):
+    post = get_object_or_404(Post, id = request.POST['favorite'])
+    if post.favorites.filter(id = request.user.id).exists():
+        post.favorites.remove(request.user)
+    else:
+        post.favorites.add(request.user)
+    return HttpResponseRedirect(post.get_absolute_url())
 
 class PostListView(ListView):
     # this is a class that inherents from the django listview class
@@ -79,6 +95,7 @@ class PostListView(ListView):
         context['liked_status'] = self.liked_status()
         context['like_num'] = self.how_many_likes()
         return context
+
     
     def liked_status(self):
         liked = set()
@@ -94,21 +111,26 @@ class PostListView(ListView):
         return like_num_dict
 
 
-
-
-
-
-
-
 class IndividualPostView(DetailView):
     model = Post
+    posts = Post.objects.all()
     # automatically looks for a template named: myBlog/post_detail.html
     # if the template is already named according to the convention, no need to specify
     # the default context_object_name is 'object'
     # if the template variable is already written and don't want to change
     # specify the attribute, like what i did in the PostListView()
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['favorited_status'] = self.favorited_status()
+        return context
 
+    def favorited_status(self):
+        favorited = set()
+        for po in IndividualPostView.posts:
+            if self.request.user in po.favorites.all():
+                favorited.add(po)
+        return favorited
 
 class CreatePostView(LoginRequiredMixin, CreateView):
     # should provide fields 
