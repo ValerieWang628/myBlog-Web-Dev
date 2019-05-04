@@ -6,6 +6,18 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q, F, Count
 
+import json
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
+import nltk
+from nltk.tokenize import sent_tokenize, word_tokenize, RegexpTokenizer
+from nltk.corpus import stopwords
+import re
+from nltk.corpus import wordnet as wn
+import numpy as np
+from nltk.corpus import genesis
+from nltk.corpus import wordnet_ic
+
 
 # def home(request):
 
@@ -58,6 +70,10 @@ def search(request):
     }
     
     return render(request, 'myBlog/search.html', context)
+
+
+
+
 
 def like_post(request):
     post = get_object_or_404(Post, id = request.POST.get('like'))
@@ -173,24 +189,37 @@ class DeletePostView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
         return ((self.request.user == post.author))
 
 
+def smartSearch(request):
 
-# fakePosts = [
-# {
-#     'author': 'Valerie Wang',
-#     'subject': 'I love Jazz',
-#     'content': 'I think Jazz is the best',
-#     'date_posted': 'April 20, 2018'
-# },
-# {
-#     'author': 'Hao Wu',
-#     'subject': 'Pop is better',
-#     'content': 'I think pop music is the best',
-#     'date_posted': 'April 21, 2018'
-# },
-# {
-#     'author': 'Kuangji Shen',
-#     'subject': 'You both are dumb',
-#     'content': 'I think they both sucks',
-#     'date_posted': 'April 22, 2018'
-# }
-# ]
+
+    queryPool = Post.objects.all()
+    query = request.GET.get("q")
+    searchKeywords = query.replace(' ', '+')
+
+    
+
+
+def google_looker(searchKeywords):
+
+    searchEngineId = "016802530785826462080:dcrmsc81elm"
+    apiKey = "AIzaSyBS7qVnVRyjFO2bpmIc2lW2IwN8EhtHwDw"
+
+    url = "https://www.googleapis.com/customsearch/v1?key=" + \
+        apiKey + "&cx=" + searchEngineId + "&q=" + searchKeywords +\
+        "&lr=lang_en" 
+
+    result = urlopen(url)
+    dataDict = json.load(result)
+    webUrl = dataDict["items"][0]["link"]
+    soup = BeautifulSoup(urlopen(webUrl), 'lxml')
+    text = soup.get_text()
+    text = re.sub(r'[^\w\s]','',text)
+    engWords = set(nltk.corpus.words.words()) # this is almost all the english words that NLTK has.
+    tokenizedText = set(word_tokenize(text)) # separate the text into words and put'em into a list
+    tokenedEng = engWords & tokenizedText # eliminate non-englihs words
+    stopWords = set(stopwords.words("english")) # eliminate meaningless words
+    tokenedEng = tokenedEng - stopWords 
+    tokenedEng = [w for w in tokenedEng if len(w) > 4] # short words tend not to have strong connections w/ target words
+    tagged = nltk.pos_tag(tokenedEng)
+    # Pos Tag List: https://pythonprogramming.net/natural-language-toolkit-nltk-part-speech-tagging/
+    nouns = [w[0] for w in tagged if w[1] == "NN"]

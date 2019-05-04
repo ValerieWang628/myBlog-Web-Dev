@@ -4,6 +4,17 @@ from django.contrib.auth.models import User
 # the post model and user model are going to have a relationship
 from django.urls import reverse
 
+class Tag(models.Model):
+    name = models.CharField(max_length = 250)
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'tag'
+        verbose_name_plural = 'tags'
+    
+    def __str__(self):
+        return self.name
+
 class Post(models.Model):
     # each class is going to be own table and database
     # each attribute of it will be a diff. field in the database
@@ -13,6 +24,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete = models.CASCADE)
     likes = models.ManyToManyField(User, related_name = 'likes', blank = True)
     favorites = models.ManyToManyField(User, related_name = 'favorites', blank = True)
+    tags = models.ForeignKey(Tag, default = "tag", on_delete=models.CASCADE)
     # foreignKey: one to many relation
     # on_delete specifies what to do if a user is deleted
 

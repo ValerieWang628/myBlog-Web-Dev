@@ -34,6 +34,7 @@ urlpatterns = [
         # the home function is in the view.py to display the post content into the html template
     path('about/', views.about, name = 'myBlogAbout'),
     path('search/', views.search, name = 'searchPage'),
+    path('smartsearch/', views.smartSearch, name = 'smartSearch'),
     # need a trailing slash
     # don't need to update in the myOwnProj urls.py 
     # because the main urls.py sends anything of blog to myBlog and lets myBlog handles that
